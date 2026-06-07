@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Condition Checker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        /* Animation for result card */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+<div class="w-full max-w-3xl glass-card rounded-2xl overflow-hidden flex flex-col">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-brand-600 to-brand-500 p-6 text-white text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-full mb-3">
+            <i class="fa-solid fa-laptop-medical text-3xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold">ระบบตรวจสอบเงื่อนไขรายการยาอัจฉริยะ</h1>
+        <p class="text-brand-50 mt-1 opacity-90">เลือกชื่อยาและสิทธิการรักษา เพื่อดูชื่อการค้าและเงื่อนไขการเบิกจ่าย</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="p-6 md:p-8 flex flex-col gap-6">
+        
+        <!-- Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            
+            <!-- Drug Select -->
+            <div>
+                <label for="drugSelect" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-capsules mr-1 text-gray-400"></i> เลือกชื่อสามัญทางยา (Generic Name)
+                </label>
+                <div class="relative">
+                    <select id="drugSelect" class="w-full bg-white border border-gray-300 text-gray-900 text-base rounded-xl focus:ring-brand-500 focus:border-brand-500 block p-3.5 pr-10 shadow-sm transition-all outline-none">
+                        <option value="" disabled selected>-- กรุณาเลือกรายการยา --</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Patient Right Select -->
+            <div>
+                <label for="rightSelect" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa-solid fa-id-card-clip mr-1 text-gray-400"></i> เลือกสิทธิการรักษา
+                </label>
+                <div class="relative">
+                    <select id="rightSelect" class="w-full bg-white border border-gray-300 text-gray-900 text-base rounded-xl focus:ring-brand-500 focus:border-brand-500 block p-3.5 pr-10 shadow-sm transition-all outline-none">
+                        <option value="สปสช">สปสช (บัตรทอง)</option>
+                        <option value="ปกส">ประกันสังคม</option>
+                        <option value="จ่ายตรง" selected>จ่ายตรง / ต้นสังกัด</option>
+                        <option value="ชำระเงินเอง">ชำระเงินเอง</option>
+                    </select>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Result Display Area -->
+        <div id="emptyState" class="flex flex-col items-center justify-center py-10 px-4 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 mt-4">
+            <i class="fa-solid fa-magnifying-glass text-4xl text-gray-300 mb-3"></i>
+            <h3 class="text-lg font-medium text-gray-500">รอการประมวลผล</h3>
+            <p class="text-sm text-gray-400 mt-1">กรุณาเลือกรายการยาเพื่อดูเงื่อนไข</p>
+        </div>
+
+        <!-- This card will be shown dynamically -->
+        <div id="resultCard" class="hidden mt-2 animate-slide-up">
+            <!-- Dynamic Content Injected Here -->
+        </div>
+
+    </div>
+    
+    <!-- Footer -->
+    <div class="bg-gray-50 p-4 border-t border-gray-100 text-center text-xs text-gray-500">
+        อ้างอิงข้อมูลจาก: รายการยาใช้ตามสิทธิ์ผู้ป่วย (อัปเดตล่าสุด) • ห้ามรูดสิทธิ์ ว.34 ให้สำรองจ่ายก่อน
+    </div>
+
+</div>
+
+<script>
+    // --- DATABASE ---
+    // ข้อมูลจากเอกสาร PDF "ตัวอย่าง รายการยา ใช้ตามสิทธิ์ผู้ป่วย"
+    const drugDatabase = {
+        "Bevacizumab": {
+            "สปสช": { trade: "ABEVMY", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "ปกส": { trade: "AVEGRA", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "จ่ายตรง": { trade: "VERSAVO", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "MVASI / VERSAVO", condition: "Self", detail: "ชำระเงินเอง (ไม่มีเงื่อนไขเบิก)" }
+        },
+        "Trastuzumab": {
+            "สปสช": { trade: "ARYOTRUST", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "ปกส": { trade: "OGIVRI", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "จ่ายตรง": { trade: "HERZUMA", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "HERZUMA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Rituximab": {
+            "สปสช": { trade: "TRUXIMA", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "ปกส": { trade: "TRUXIMA", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "จ่ายตรง": { trade: "TRUXIMA", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "TRUXIMA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Pemetrexed": {
+            "สปสช": { trade: "Pemetrexed", condition: "Special", detail: "เบิกได้: บัญชี ง. 1L ใน CA เยื่อหุ้มปอด" },
+            "ปกส": { trade: "Pemetrexed", condition: "Special", detail: "เบิกได้: บัญชี ง. 1L ใน CA เยื่อหุ้มปอด" },
+            "จ่ายตรง": { trade: "ALIMTA", condition: "Normal", detail: "เบิกจ่ายตรงได้ตามปกติ" },
+            "ชำระเงินเอง": { trade: "PEMIREX / PEMTERO", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Atezolizumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์ - ผู้ป่วยต้องชำระเงินเอง" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์ - ผู้ป่วยต้องชำระเงินเอง" },
+            "จ่ายตรง": { trade: "TECENTRIQ", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "TECENTRIQ", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Fulvestrant": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "SANDOZ", condition: "Normal", detail: "เบิกจ่ายตรงได้ตามปกติ" },
+            "ชำระเงินเอง": { trade: "SANDOZ", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "T-DM1": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "KADCYLA", condition: "ว.34", detail: "รายการ ว.34 ห้ามรูดบัตร! ให้ผู้ป่วยสำรองจ่ายก่อน แล้วนำใบเสร็จไปเบิกต้นสังกัด" },
+            "ชำระเงินเอง": { trade: "KADCYLA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Pembrolizumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "KEYTRUDA", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "KEYTRUDA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Nimotuzumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "TheraCIM", condition: "Normal", detail: "เบิกจ่ายตรงได้ตามปกติ" },
+            "ชำระเงินเอง": { trade: "TheraCIM", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Panitumumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "VECTIBIX", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "VECTIBIX", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Nivolumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "OPDIVO", condition: "ว.34", detail: "รายการ ว.34 ห้ามรูดบัตร! ให้ผู้ป่วยสำรองจ่ายก่อน แล้วนำใบเสร็จไปเบิกต้นสังกัด" },
+            "ชำระเงินเอง": { trade: "OPDIVO", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Ramucirumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "CYRAMZA", condition: "ว.34", detail: "รายการ ว.34 ห้ามรูดบัตร! ให้ผู้ป่วยสำรองจ่ายก่อน แล้วนำใบเสร็จไปเบิกต้นสังกัด" },
+            "ชำระเงินเอง": { trade: "CYRAMZA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Nab-paclitaxel": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "ABRAXANE", condition: "ว.34", detail: "รายการ ว.34 ห้ามรูดบัตร! ให้ผู้ป่วยสำรองจ่ายก่อน แล้วนำใบเสร็จไปเบิกต้นสังกัด" },
+            "ชำระเงินเอง": { trade: "ABRAXANE", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Pertuzumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "PERJETA", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "PERJETA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "PHESGO": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "PHESGO", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "PHESGO", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Ipilimumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "YERVOY", condition: "ว.34", detail: "รายการ ว.34 ห้ามรูดบัตร! ให้ผู้ป่วยสำรองจ่ายก่อน แล้วนำใบเสร็จไปเบิกต้นสังกัด" },
+            "ชำระเงินเอง": { trade: "YERVOY", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Eribulin": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "HALAVEN", condition: "Normal", detail: "เบิกจ่ายตรงได้ตามปกติ" },
+            "ชำระเงินเอง": { trade: "HALAVEN", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Bortezomib": {
+            "สปสช": { trade: "Bortezomib", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "ปกส": { trade: "Bortezomib", condition: "จ.2", detail: "ตรวจสอบว่ามีการบันทึกข้อมูลแบบฟอร์ม จ.2 แล้ว" },
+            "จ่ายตรง": { trade: "Bortezomib", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "Bortezomib", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Durvalumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "IMFINZI", condition: "OCPA", detail: "ตรวจสอบการอนุมัติ & วันหมดอายุ OCPA" },
+            "ชำระเงินเอง": { trade: "IMFINZI", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "Denosumab": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "XGEVA", condition: "ว.34", detail: "รายการ ว.34 ห้ามรูดบัตร! ให้ผู้ป่วยสำรองจ่ายก่อน แล้วนำใบเสร็จไปเบิกต้นสังกัด" },
+            "ชำระเงินเอง": { trade: "XGEVA", condition: "Self", detail: "ชำระเงินเอง" }
+        },
+        "T-Dxd": {
+            "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "ปกส": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์" },
+            "จ่ายตรง": { trade: "ENHERTU", condition: "Not Approved", detail: "ชำระเงินเองทุกกรณี (จ่ายตรงก็เบิกคืนไม่ได้ รูดบัตรไม่ได้)" },
+            "ชำระเงินเอง": { trade: "ENHERTU", condition: "Self", detail: "ชำระเงินเอง" }
+        }
+    };
+
+    const drugSelect = document.getElementById('drugSelect');
+    const rightSelect = document.getElementById('rightSelect');
+    const emptyState = document.getElementById('emptyState');
+    const resultCard = document.getElementById('resultCard');
+
+    // Populate Drug Dropdown
+    Object.keys(drugDatabase).sort().forEach(drug => {
+        const option = document.createElement('option');
+        option.value = drug;
+        option.textContent = drug;
+        drugSelect.appendChild(option);
+    });
+
+    // Event Listeners
+    drugSelect.addEventListener('change', updateResult);
+    rightSelect.addEventListener('change', updateResult);
+
+    function updateResult() {
+        const selectedDrug = drugSelect.value;
+        const selectedRight = rightSelect.value;
+
+        if (!selectedDrug || !selectedRight) return;
+
+        // Get data
+        const data = drugDatabase[selectedDrug][selectedRight];
+        
+        // Hide empty state, show result card
+        emptyState.classList.add('hidden');
+        resultCard.classList.remove('hidden');
+        
+        // Retrigger animation
+        resultCard.classList.remove('animate-slide-up');
+        void resultCard.offsetWidth; // trigger reflow
+        resultCard.classList.add('animate-slide-up');
+
+        // Determine Theme based on condition
+        let theme = {};
+        
+        if (data.condition === "Not Approved") {
+            theme = { 
+                border: "border-red-200", bg: "bg-red-50", icon: "fa-circle-xmark", 
+                iconColor: "text-red-500", textAlert: "text-red-700", badgeBg: "bg-red-100", badgeText: "text-red-800"
+            };
+        } else if (data.condition === "OCPA") {
+            theme = { 
+                border: "border-blue-200", bg: "bg-blue-50", icon: "fa-laptop-medical", 
+                iconColor: "text-blue-500", textAlert: "text-blue-800", badgeBg: "bg-blue-600", badgeText: "text-white"
+            };
+        } else if (data.condition === "จ.2") {
+            theme = { 
+                border: "border-emerald-200", bg: "bg-emerald-50", icon: "fa-file-signature", 
+                iconColor: "text-emerald-500", textAlert: "text-emerald-800", badgeBg: "bg-emerald-500", badgeText: "text-white"
+            };
+        } else if (data.condition === "ว.34") {
+            theme = { 
+                border: "border-orange-200", bg: "bg-orange-50", icon: "fa-credit-card", 
+                iconColor: "text-orange-500", textAlert: "text-orange-800", badgeBg: "bg-orange-500", badgeText: "text-white"
+            };
+        } else {
+            // Normal or Self pay or Special
+            theme = { 
+                border: "border-gray-200", bg: "bg-gray-50", icon: "fa-check-circle", 
+                iconColor: "text-gray-500", textAlert: "text-gray-800", badgeBg: "bg-gray-200", badgeText: "text-gray-700"
+            };
+        }
+
+        // Check if trade name is available
+        const tradeNameHTML = data.trade === "-" 
+            ? `<span class="text-red-500 font-medium text-lg">ไม่มีสิทธิ์เบิกจ่าย</span>` 
+            : `<span class="text-gray-900 font-bold text-2xl tracking-wide">${data.trade}</span>`;
+
+        // Action text
+        const actionPrefix = data.condition === "Not Approved" ? "ผลลัพธ์:" : "ข้อควรปฏิบัติ:";
+
+        // ปรับแต่งข้อความเมื่อสถานะคือ Not Approved ตามเกณฑ์ใหม่
+        let displayDetail = data.detail;
+        if (data.condition === "Not Approved" && displayDetail.includes("ไม่อนุมัติสิทธิ์")) {
+            displayDetail = "ไม่อยู่ในเงื่อนไขการเบิกจ่ายตามสิทธิการรักษา หากประสงค์ใช้ยา ผู้ป่วยต้องชำระค่าใช้จ่ายเอง";
+        }
+
+        // Build HTML
+        resultCard.innerHTML = `
+            <div class="border-2 ${theme.border} rounded-2xl overflow-hidden mt-4 transition-all duration-300">
+                <!-- Status Header -->
+                <div class="${theme.bg} px-5 py-4 border-b ${theme.border} flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${theme.icon} ${theme.iconColor} text-2xl"></i>
+                        <span class="font-bold text-lg ${theme.textAlert}">${data.condition === 'Not Approved' ? 'ไม่อนุมัติสิทธิ์' : 'อนุมัติให้ใช้ได้'}</span>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-bold rounded-full ${theme.badgeBg} ${theme.badgeText} shadow-sm border border-black/5">
+                        ${data.condition}
+                    </span>
+                </div>
+                
+                <!-- Content Body -->
+                <div class="p-5 bg-white">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <span class="block text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">ชื่อสามัญ (Generic)</span>
+                            <span class="text-gray-800 font-medium">${selectedDrug}</span>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
+                            <span class="block text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">สิทธิการรักษา</span>
+                            <span class="text-gray-800 font-medium">${selectedRight}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <span class="block text-sm text-gray-500 font-semibold mb-1">ชื่อการค้าที่ระบบอนุมัติ (Trade Name)</span>
+                        <div class="bg-slate-100 py-3 px-4 rounded-xl inline-block border border-slate-200">
+                            ${tradeNameHTML}
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl">
+                        <span class="block text-xs font-bold text-amber-800 mb-1">${actionPrefix}</span>
+                        <p class="text-amber-900 font-medium text-[15px] leading-snug">
+                            ${displayDetail}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+</script>
+
+</body>
+</html>
