@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบตรวจสอบเงื่อนไขใช้ยาตามสิทธิผู้ป่วย</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,7 +29,6 @@
                 radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
                 radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
             background-attachment: fixed;
-            -webkit-tap-highlight-color: transparent; /* เอาแถบสีฟ้าเวลาแตะบน iOS ออก */
         }
         
         .glass-card {
@@ -101,12 +100,12 @@
             padding: 14px; position: fixed; z-index: 50; left: 50%; bottom: 30px; transform: translateX(-50%);
             font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
         }
-        #toast.show { visibility: visible; opacity: 1; bottom: max(50px, env(safe-area-inset-bottom, 50px)); }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
     </style>
 </head>
-<body class="min-h-[100dvh] flex items-start md:items-center justify-center p-3 sm:p-6 pt-6 md:pt-12 pb-[max(1rem,env(safe-area-inset-bottom))]">
+<body class="min-h-screen flex items-center justify-center p-3 md:p-6">
 
-<div class="w-full max-w-3xl glass-card rounded-[1.5rem] md:rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
+<div class="w-full max-w-3xl glass-card rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
     
     <div class="relative header-image-bg p-6 md:p-8 text-center overflow-hidden flex justify-center">
         <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/80 via-blue-900/70 to-cyan-900/90 mix-blend-multiply"></div>
@@ -117,13 +116,13 @@
         <div class="sparkle" style="top: 30%; left: 85%; animation: twinkle 4s infinite 0.7s;"></div>
         <div class="sparkle" style="top: 65%; left: 80%; animation: twinkle 3.5s infinite 1.1s;"></div>
         
-        <div class="relative z-10 flex flex-col sm:flex-row items-center gap-4 pt-[env(safe-area-inset-top,0)]">
+        <div class="relative z-10 flex flex-col sm:flex-row items-center gap-4">
             <div class="shimmer-box w-14 h-14 md:w-16 md:h-16 bg-white/10 backdrop-blur-xl rounded-[1rem] border border-white/20 flex items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.2)] shrink-0 transition-transform hover:scale-105 duration-300">
                 <i class="fa-solid fa-laptop-medical text-2xl md:text-3xl text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.6)]"></i>
             </div>
             
             <div class="flex flex-col items-center sm:items-start text-center sm:text-left">
-                <h1 class="text-[1.3rem] md:text-2xl font-bold tracking-wide mb-1.5 text-white drop-shadow-lg leading-tight">
+                <h1 class="text-xl md:text-2xl font-bold tracking-wide mb-1.5 text-white drop-shadow-lg leading-tight">
                     ระบบตรวจสอบเงื่อนไขรายการยา
                 </h1>
                 <div class="shimmer-box bg-black/30 backdrop-blur-md border border-white/15 rounded-full px-4 py-1.5 inline-block shadow-sm">
@@ -150,34 +149,40 @@
                 
                 <div class="relative mb-3">
                     <input type="text" id="searchInput" placeholder="พิมพ์ชื่อยาเพื่อกรองรายการ..." autocomplete="off"
-                           class="w-full h-[50px] bg-slate-50 border-2 border-slate-200 text-slate-800 text-[16px] rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 block p-3 pr-10 shadow-inner transition-all outline-none font-medium placeholder:text-slate-400 hover:bg-white focus:bg-white">
-                    <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                           class="w-full bg-slate-50 border-2 border-slate-200 text-slate-800 text-sm md:text-base rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 block p-3 pr-10 shadow-inner transition-all outline-none font-medium placeholder:text-slate-400 hover:bg-white focus:bg-white cursor-pointer">
+                    
+                    <div id="searchIcon" class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none transition-opacity">
                         <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                    </div>
+                    <div id="clearSearchBtn" class="absolute inset-y-0 right-0 flex items-center pr-4 cursor-pointer hidden transition-all" onclick="clearSearch()">
+                        <i class="fa-solid fa-circle-xmark text-slate-400 hover:text-red-500 text-lg"></i>
                     </div>
                 </div>
 
-                <div id="drugListBox" class="w-full bg-white border-2 border-slate-200 rounded-xl h-[200px] md:h-56 overflow-y-auto custom-scrollbar shadow-inner transition-colors overscroll-contain">
+                <div id="drugListBox" class="w-full bg-white border-2 border-slate-200 rounded-xl h-44 md:h-48 overflow-y-auto custom-scrollbar shadow-inner transition-colors">
                     </div>
             </div>
 
-            <div class="group flex flex-col">
+            <div class="group">
                 <label for="rightSelect" class="block text-sm font-semibold text-slate-700 mb-2 transition-colors group-focus-within:text-blue-600">
                     <div class="bg-blue-100 text-blue-600 w-8 h-8 inline-flex items-center justify-center rounded-lg mr-2 shadow-sm">
                         <i class="fa-solid fa-id-card-clip"></i>
                     </div>
                     เลือกสิทธิการรักษา
                 </label>
-                <select id="rightSelect" class="w-full h-[50px] bg-slate-50 border-2 border-slate-200 text-slate-800 text-[16px] rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-3 pr-10 shadow-inner transition-all outline-none cursor-pointer hover:bg-white focus:bg-white font-medium">
-                    <option value="" disabled selected>-- กรุณาเลือกสิทธิการรักษา --</option>
-                    <option value="สปสช">สปสช (บัตรทอง)</option>
-                    <option value="ปกส">ประกันสังคม</option>
-                    <option value="จ่ายตรง">จ่ายตรง</option>
-                    <option value="ชำระเงินเอง">ชำระเงินเอง</option>
-                </select>
+                <div class="relative h-44 md:h-48 flex flex-col">
+                    <select id="rightSelect" class="w-full bg-slate-50 border-2 border-slate-200 text-slate-800 text-sm md:text-base rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block p-3 pr-10 shadow-inner transition-all outline-none cursor-pointer hover:bg-white focus:bg-white font-medium">
+                        <option value="" disabled selected>-- กรุณาเลือกสิทธิการรักษา --</option>
+                        <option value="สปสช">สปสช (บัตรทอง)</option>
+                        <option value="ปกส">ประกันสังคม</option>
+                        <option value="จ่ายตรง">จ่ายตรง</option>
+                        <option value="ชำระเงินเอง">ชำระเงินเอง</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div id="emptyState" class="flex flex-col items-center justify-center py-10 md:py-14 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/80 transition-all mt-2">
+        <div id="emptyState" class="flex flex-col items-center justify-center py-10 md:py-14 px-4 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/80 transition-all">
             <div class="w-16 h-16 md:w-20 md:h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 border border-slate-100 relative">
                 <i class="fa-solid fa-magnifying-glass text-2xl md:text-3xl text-slate-300"></i>
                 <div class="absolute top-0 left-0 w-full h-full border-2 border-indigo-200 rounded-full animate-ping opacity-20"></div>
@@ -191,19 +196,19 @@
 
     </div>
     
-    <div class="bg-gradient-to-b from-slate-50/50 to-slate-100/80 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] border-t border-slate-200 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] relative z-10 mt-auto">
+    <div class="bg-gradient-to-b from-slate-50/50 to-slate-100/80 p-5 border-t border-slate-200 shadow-[0_-10px_20px_rgba(0,0,0,0.02)] relative z-10">
         <div class="flex flex-col items-center justify-center text-center">
             <p class="text-slate-600 font-medium mb-3 text-[13px] md:text-sm px-2 leading-relaxed flex items-center gap-2">
                 <i class="fa-solid fa-headset text-indigo-500"></i> งานผลิตยา ตึกรังสีรักษา กลุ่มงานเภสัชกรรม รพ.สกลนคร
             </p>
             <div class="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2.5 w-full sm:w-auto">
-                <a href="tel:042176000" class="no-wrap w-full sm:w-auto flex items-center justify-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-xl shadow-sm border border-slate-200 hover:border-emerald-400 active:bg-emerald-50 transition-all group">
+                <a href="tel:042176000" class="no-wrap w-full sm:w-auto flex items-center justify-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all group">
                     <i class="fa-solid fa-phone text-emerald-500 group-hover:text-emerald-600"></i>
-                    <span class="text-slate-700 font-medium text-sm">042-176000 ต่อ 3932</span>
+                    <span class="text-slate-700 font-medium text-xs md:text-sm">042-176000 ต่อ 3932</span>
                 </a>
-                <a href="mailto:happytpn55@gmail.com" class="no-wrap w-full sm:w-auto flex items-center justify-center gap-2 bg-white px-4 py-3 sm:py-2 rounded-xl shadow-sm border border-slate-200 hover:border-blue-400 active:bg-blue-50 transition-all group">
+                <a href="mailto:happytpn55@gmail.com" class="no-wrap w-full sm:w-auto flex items-center justify-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all group">
                     <i class="fa-solid fa-envelope text-blue-500 group-hover:text-blue-600"></i>
-                    <span class="text-slate-700 font-medium text-sm">happytpn55@gmail.com</span>
+                    <span class="text-slate-700 font-medium text-xs md:text-sm">happytpn55@gmail.com</span>
                 </a>
             </div>
         </div>
@@ -246,26 +251,27 @@
     const rightSelect = document.getElementById('rightSelect');
     const emptyState = document.getElementById('emptyState');
     const resultCard = document.getElementById('resultCard');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    const searchIcon = document.getElementById('searchIcon');
 
     let currentShareData = null;
     let selectedDrugValue = "";
     const sortedDrugs = Object.keys(drugDatabase).sort((a, b) => a.localeCompare(b));
 
-    // วาดรายการยาใน List Box
+    // ฟังก์ชันวาดรายการยา
     function renderDrugList(filterText = '') {
         drugListBox.innerHTML = '';
         const filtered = sortedDrugs.filter(drug => drug.toLowerCase().includes(filterText.toLowerCase()));
         
         if (filtered.length === 0) {
-            drugListBox.innerHTML = '<div class="p-4 text-slate-500 text-center text-[15px] font-medium">ไม่พบรายการยาที่ค้นหา</div>';
+            drugListBox.innerHTML = '<div class="p-4 text-slate-500 text-center text-sm font-medium">ไม่พบรายการยาที่ค้นหา</div>';
         } else {
             filtered.forEach(drug => {
                 const div = document.createElement('div');
                 const isSelected = selectedDrugValue === drug;
                 
-                // ปรับ py-3.5 เพื่อให้เป็นพื้นที่สัมผัสที่ใหญ่ขึ้นสำหรับนิ้วบนมือถือ
-                div.className = `px-4 py-3.5 cursor-pointer border-b border-slate-100 last:border-0 text-[15px] md:text-base transition-colors duration-150 flex items-center justify-between
-                                ${isSelected ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-700 hover:bg-slate-50 active:bg-slate-100 font-medium'}`;
+                div.className = `px-4 py-3 cursor-pointer border-b border-slate-100 last:border-0 text-sm md:text-[15px] transition-colors duration-150 flex items-center justify-between
+                                ${isSelected ? 'bg-indigo-50 text-indigo-700 font-bold' : 'text-slate-700 hover:bg-slate-50 font-medium'}`;
                 
                 div.innerHTML = `
                     <span>${drug}</span>
@@ -274,7 +280,13 @@
 
                 div.onclick = () => { 
                     selectedDrugValue = drug;
-                    renderDrugList(searchInput.value); 
+                    searchInput.value = drug; // กำหนดค่า input เป็นชื่อยา
+                    
+                    // ซ่อน Icon แว่นขยาย และแสดงปุ่ม X
+                    searchIcon.classList.add('hidden');
+                    clearSearchBtn.classList.remove('hidden');
+                    
+                    renderDrugList(drug); // ค้นหาเฉพาะคำนี้ ทำให้เหลือแค่รายการเดียว
                     updateResult();
                 };
                 drugListBox.appendChild(div);
@@ -282,17 +294,38 @@
         }
     }
 
+    // ฟังก์ชันล้างค่าค้นหา
+    function clearSearch() {
+        selectedDrugValue = "";
+        searchInput.value = "";
+        searchIcon.classList.remove('hidden');
+        clearSearchBtn.classList.add('hidden');
+        renderDrugList();
+        updateResult();
+        searchInput.focus();
+    }
+
+    // แสดงรายการยาทั้งหมดตอนโหลดหน้า
     renderDrugList();
 
+    // กรองรายการยาเมื่อพิมพ์
     searchInput.addEventListener('input', (e) => {
+        if(e.target.value !== selectedDrugValue) {
+            selectedDrugValue = ""; 
+            searchIcon.classList.remove('hidden');
+            clearSearchBtn.classList.add('hidden');
+        }
         renderDrugList(e.target.value);
+        updateResult();
     });
 
+    // ทริกเกอร์ตอนเลือกสิทธิการรักษา
     rightSelect.addEventListener('change', updateResult);
 
     function updateResult() {
         const selectedRight = rightSelect.value;
 
+        // เช็คว่าเลือกยาและสิทธิครบหรือยัง
         if (!selectedDrugValue || !selectedRight || !drugDatabase[selectedDrugValue]) {
             resultCard.classList.add('hidden');
             emptyState.classList.remove('hidden');
@@ -328,65 +361,76 @@
         let papHtml = "";
         if (data.pap) {
             papHtml = `
-            <div class="mt-4 md:mt-5 bg-gradient-to-r from-amber-50 to-yellow-50/30 border border-amber-200/60 p-4 rounded-2xl flex items-start gap-3 md:gap-4 shadow-sm relative overflow-hidden group w-full">
+            <div class="mt-4 md:mt-5 bg-gradient-to-r from-amber-50 to-yellow-50/30 border border-amber-200/60 p-4 md:p-5 rounded-2xl flex items-start gap-3 md:gap-4 shadow-sm relative overflow-hidden group w-full">
                 <div class="absolute -right-4 -top-4 text-amber-500/10 text-6xl group-hover:rotate-12 transition-transform duration-500"><i class="fa-solid fa-gift"></i></div>
                 <div class="bg-amber-100/80 p-2 md:p-2.5 rounded-xl z-10 shrink-0 shadow-sm border border-amber-200 animate-pulse">
                     <i class="fa-solid fa-gift text-amber-600 text-lg md:text-xl"></i>
                 </div>
                 <div class="z-10 min-w-0 flex-1">
-                    <span class="block text-[13px] md:text-sm font-bold text-amber-900 mb-1">โครงการช่วยเหลือผู้ป่วย (PAP):</span>
-                    <p class="text-amber-800 font-medium text-[13px] md:text-sm leading-relaxed break-words">${data.pap}</p>
+                    <span class="block text-xs md:text-sm font-bold text-amber-900 mb-1">โครงการช่วยเหลือผู้ป่วย (PAP):</span>
+                    <p class="text-amber-800 font-medium text-xs md:text-sm leading-relaxed break-words">${data.pap}</p>
                 </div>
             </div>`;
         }
 
         resultCard.innerHTML = `
-            <div class="bg-white border-2 ${theme.border} rounded-2xl md:rounded-3xl overflow-hidden shadow-lg shadow-slate-200/50 w-full">
-                <div id="slip-content" class="bg-white">
+            <div class="bg-white border-2 ${theme.border} rounded-2xl md:rounded-3xl overflow-hidden shadow-lg shadow-slate-200/50 w-full relative">
+                <div id="slip-content" class="bg-white flex flex-col">
+                    
                     <div class="${theme.bg} px-4 md:px-6 py-4 border-b ${theme.border} flex flex-row items-center justify-between gap-2">
-                        <div class="flex items-center gap-2.5 md:gap-3">
-                            <div class="bg-white p-2 rounded-xl shadow-sm shimmer-box">
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <div class="bg-white p-1.5 md:p-2 rounded-xl shadow-sm shimmer-box">
                                 <i class="fa-solid ${theme.icon} ${theme.iconColor} text-lg md:text-xl w-5 md:w-6 text-center"></i>
                             </div>
-                            <span class="font-bold text-[15px] md:text-lg ${theme.textAlert}">${data.condition === 'Not Approved' ? 'ไม่อนุมัติสิทธิ์' : 'อนุมัติให้ใช้ได้'}</span>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-[15px] md:text-lg ${theme.textAlert}">${data.condition === 'Not Approved' ? 'ไม่อนุมัติสิทธิ์' : 'อนุมัติให้ใช้ได้'}</span>
+                                <span class="text-[10px] md:text-xs text-slate-500 font-medium">แบบสรุปเงื่อนไขการใช้ยา</span>
+                            </div>
                         </div>
-                        <span class="px-3 md:px-4 py-1.5 text-[11px] md:text-xs font-bold rounded-full ${theme.badgeBg} ${theme.badgeText} shadow-sm border border-black/5 tracking-wide whitespace-nowrap">
+                        <span class="px-3 md:px-4 py-1 md:py-1.5 text-[10px] md:text-xs font-bold rounded-full ${theme.badgeBg} ${theme.badgeText} shadow-sm border border-black/5 tracking-wide whitespace-nowrap">
                             ${data.condition}
                         </span>
                     </div>
-                    <div class="p-4 sm:p-5 md:p-8">
-                        <div class="flex flex-col sm:flex-row gap-3 mb-5 md:mb-6">
-                            <div class="bg-slate-50/80 p-3.5 md:p-4 rounded-xl border border-slate-100 flex-1 min-w-0">
-                                <span class="block text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">ชื่อสามัญ (Generic)</span>
+
+                    <div class="p-4 md:p-8 flex-1">
+                        <div class="flex flex-col sm:flex-row gap-3 md:gap-4 mb-4 md:mb-6">
+                            <div class="bg-slate-50/80 p-3 md:p-4 rounded-xl border border-slate-100 flex-1 min-w-0">
+                                <span class="block text-[10px] md:text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">ชื่อสามัญ (Generic)</span>
                                 <span class="text-slate-800 font-semibold text-[15px] md:text-lg break-words block">${selectedDrugValue}</span>
                             </div>
-                            <div class="bg-slate-50/80 p-3.5 md:p-4 rounded-xl border border-slate-100 flex-1 min-w-0">
-                                <span class="block text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">สิทธิการรักษา</span>
+                            <div class="bg-slate-50/80 p-3 md:p-4 rounded-xl border border-slate-100 flex-1 min-w-0">
+                                <span class="block text-[10px] md:text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">สิทธิการรักษา</span>
                                 <span class="text-slate-800 font-semibold text-[15px] md:text-lg break-words block">${selectedRight}</span>
                             </div>
                         </div>
-                        <div class="mb-5 md:mb-6 flex flex-col items-start w-full">
-                            <span class="block text-sm text-slate-500 font-semibold mb-2">ชื่อการค้าที่ระบบอนุมัติ (Trade Name)</span>
-                            <div class="bg-indigo-50/50 py-3 px-4 md:px-6 rounded-xl inline-block border border-indigo-100 shadow-sm max-w-full overflow-hidden w-full sm:w-auto text-center sm:text-left">
+                        <div class="mb-4 md:mb-6 flex flex-col items-start w-full">
+                            <span class="block text-xs md:text-sm text-slate-500 font-semibold mb-2">ชื่อการค้าที่ระบบอนุมัติ (Trade Name)</span>
+                            <div class="bg-indigo-50/50 py-2.5 md:py-3 px-4 md:px-6 rounded-xl inline-block border border-indigo-100 shadow-sm max-w-full overflow-hidden w-full sm:w-auto text-center sm:text-left">
                                 ${tradeNameHTML}
                             </div>
                         </div>
-                        <div class="bg-slate-50 border-l-4 border-slate-400 p-4 rounded-r-xl rounded-l-sm shadow-sm relative w-full">
-                            <span class="block text-[11px] md:text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">${actionPrefix}</span>
-                            <p class="text-slate-700 font-medium text-[14px] md:text-[15px] leading-relaxed break-words">${displayDetail}</p>
+                        <div class="bg-slate-50 border-l-4 border-slate-400 p-4 md:p-5 rounded-r-xl rounded-l-sm shadow-sm relative w-full">
+                            <span class="block text-[11px] md:text-xs font-bold text-slate-700 mb-1.5 md:mb-2 uppercase tracking-wide">${actionPrefix}</span>
+                            <p class="text-slate-700 font-medium text-[13px] md:text-[15px] leading-relaxed break-words">${displayDetail}</p>
                         </div>
                         ${papHtml}
                     </div>
+
+                    <div class="px-5 md:px-8 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-[10px] md:text-xs text-slate-400 font-medium">
+                        <span><i class="fa-solid fa-hospital mr-1 text-slate-300"></i>รพ.สกลนคร</span>
+                        <span>ข้อมูล ณ วันที่: ${new Date().toLocaleDateString('th-TH')}</span>
+                    </div>
+
                 </div>
                 
-                <div class="bg-slate-50 border-t border-slate-100 p-4 md:p-5 flex flex-col sm:flex-row gap-3 justify-center w-full" data-html2canvas-ignore="true">
-                    <button onclick="shareToLine()" class="w-full sm:w-auto sm:flex-1 flex justify-center items-center gap-2 bg-[#00B900] hover:bg-[#009900] active:bg-[#008000] text-white px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-base font-semibold shadow-sm transition-all hover:shadow-md">
+                <div class="bg-white border-t border-slate-100 p-4 md:p-6 flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center w-full shadow-[0_-5px_15px_rgba(0,0,0,0.02)]" data-html2canvas-ignore="true">
+                    <button onclick="shareToLine()" class="w-full sm:w-auto flex justify-center items-center gap-2 bg-[#00B900] hover:bg-[#009900] text-white px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold shadow-sm transition-all hover:shadow-md">
                         <i class="fa-brands fa-line text-lg"></i> ส่ง LINE
                     </button>
-                    <button onclick="downloadSlip()" class="w-full sm:w-auto sm:flex-1 flex justify-center items-center gap-2 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-base font-semibold shadow-sm transition-all hover:shadow-md">
+                    <button onclick="downloadSlip()" class="w-full sm:w-auto flex justify-center items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold shadow-sm transition-all hover:shadow-md">
                         <i class="fa-solid fa-download"></i> บันทึกเป็นรูปภาพ
                     </button>
-                    <button onclick="copyData()" class="w-full sm:w-auto sm:flex-1 flex justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 active:bg-slate-100 px-4 py-3 md:py-2.5 rounded-xl text-[15px] md:text-base font-semibold shadow-sm transition-all hover:shadow-md">
+                    <button onclick="copyData()" class="w-full sm:w-auto flex justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2.5 md:py-3 rounded-xl text-sm md:text-base font-semibold shadow-sm transition-all hover:shadow-md">
                         <i class="fa-solid fa-copy text-slate-400"></i> คัดลอก
                     </button>
                 </div>
@@ -397,8 +441,10 @@
     function generateShareText() {
         if (!currentShareData) return "";
         const d = currentShareData;
-        const cleanDetail = d.detail.replace(/<br\s*[\/]?>/gi, "\n").replace(/<[^>]+>/g, '');
-        const cleanPap = d.pap ? d.pap.replace(/<br\s*[\/]?>/gi, "\n").replace(/<[^>]+>/g, '') : "";
+        
+        // แก้บั๊กคัดกรองข้อมูล: ถอด HTML ออกเฉพาะ tag ที่เป็น span (ป้องกันสัญลักษณ์ < 75 หาย)
+        const cleanDetail = d.detail.replace(/<br\s*[\/]?>/gi, "\n").replace(/<\/?span[^>]*>/gi, '');
+        const cleanPap = d.pap ? d.pap.replace(/<br\s*[\/]?>/gi, "\n").replace(/<\/?span[^>]*>/gi, '') : "";
 
         let text = `🏥 ตรวจสอบสิทธิการใช้ยา\n`;
         text += `──────────────\n`;
@@ -425,7 +471,12 @@
     }
 
     function downloadSlip() {
-        html2canvas(document.getElementById('slip-content'), { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+        // เพิ่มค่า Scale เป็น 3 เพื่อให้รูปภาพมีความคมชัดสูง
+        html2canvas(document.getElementById('slip-content'), { 
+            scale: 3, 
+            backgroundColor: '#ffffff', 
+            useCORS: true 
+        }).then(canvas => {
             const link = document.createElement('a');
             link.download = `สิทธิยา_${currentShareData.drug}_${currentShareData.right}.png`;
             link.href = canvas.toDataURL('image/png');
