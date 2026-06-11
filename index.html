@@ -10,6 +10,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
+    <!-- เพิ่ม html2canvas สำหรับแปลงหน้าจอเป็นรูปภาพ E-Slip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -54,7 +57,6 @@
             background-size: 1.2em;
         }
         
-        /* Animation ตอนโชว์ Card: เด้งดึ๋งเบาๆ */
         @keyframes slideUpBounce {
             0% { opacity: 0; transform: translateY(20px) scale(0.95); }
             60% { opacity: 1; transform: translateY(-5px) scale(1.02); }
@@ -64,7 +66,6 @@
             animation: slideUpBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
-        /* Animation ภาพพื้นหลังเลื่อน */
         @keyframes panImage {
             0% { background-position: 0% 50%; }
             100% { background-position: 100% 50%; }
@@ -75,7 +76,6 @@
             animation: panImage 40s ease-in-out infinite alternate;
         }
 
-        /* เอฟเฟกต์แสงวิ่งผ่าน (Shimmer) */
         @keyframes shimmer {
             0% { transform: translateX(-150%) skewX(-45deg); }
             100% { transform: translateX(250%) skewX(-45deg); }
@@ -94,7 +94,6 @@
             animation: shimmer 4s infinite ease-in-out;
         }
 
-        /* เอฟเฟกต์ดาววิบวับ (Sparkles) */
         @keyframes twinkle {
             0%, 100% { opacity: 0.1; transform: scale(0.5); }
             50% { opacity: 1; transform: scale(1.2) rotate(45deg); box-shadow: 0 0 15px 2px rgba(255,255,255,0.8); }
@@ -107,7 +106,6 @@
             pointer-events: none;
             z-index: 1;
         }
-        /* สร้างแฉกดาววิบวับ */
         .sparkle::before, .sparkle::after {
             content: ''; position: absolute;
             background: white; border-radius: 50%;
@@ -118,19 +116,42 @@
         .sparkle::after { width: 2px; height: 12px; }
 
         .no-wrap { white-space: nowrap; }
+
+        /* Notification Toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px;
+            position: fixed;
+            z-index: 50;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 md:p-8">
 
 <div class="w-full max-w-3xl glass-card rounded-[2rem] overflow-hidden flex flex-col shadow-2xl relative">
     
-    <!-- Header: รูปภาพพื้นหลัง + Overlay + ดาววิบวับ -->
+    <!-- Header -->
     <div class="relative header-image-bg p-8 md:p-14 text-center overflow-hidden">
-        
         <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/80 via-blue-900/70 to-cyan-900/90 mix-blend-multiply"></div>
         <div class="absolute inset-0 bg-blue-500/20 backdrop-blur-[2px]"></div>
         
-        <!-- ดวงดาววิบวับ (Sparkles) กระจายทั่ว Header -->
         <div class="sparkle" style="top: 20%; left: 15%; animation: twinkle 3s infinite 0.2s;"></div>
         <div class="sparkle" style="top: 70%; left: 10%; animation: twinkle 2.5s infinite 1.5s;"></div>
         <div class="sparkle" style="top: 30%; left: 85%; animation: twinkle 4s infinite 0.7s;"></div>
@@ -138,26 +159,20 @@
         <div class="sparkle" style="top: 15%; left: 50%; animation: twinkle 2s infinite 0.5s;"></div>
         
         <div class="relative z-10 flex flex-col items-center">
-            
-            <!-- Icon Glassmorphism + Shimmer Light -->
             <div class="shimmer-box w-20 h-20 md:w-24 md:h-24 bg-white/10 backdrop-blur-xl rounded-[1.5rem] border border-white/20 flex items-center justify-center mb-6 shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-transform hover:scale-110 duration-500">
                 <i class="fa-solid fa-laptop-medical text-4xl md:text-5xl text-cyan-300 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)] group-hover:animate-pulse"></i>
             </div>
             
-            <!-- Title -->
             <h1 class="text-2xl md:text-4xl font-bold tracking-wide mb-4 text-white drop-shadow-lg">
                 ระบบตรวจสอบเงื่อนไขรายการยา
             </h1>
             
-            <!-- Subtitle Pill + Shimmer -->
             <div class="shimmer-box bg-black/30 backdrop-blur-md border border-white/15 rounded-full px-6 py-2.5 inline-block shadow-lg">
                 <p class="text-cyan-50 text-sm md:text-base font-medium tracking-wide">
                     <i class="fa-solid fa-syringe mr-2 text-cyan-400"></i>เฉพาะรายการยามะเร็งในรูปแบบยาฉีด
                 </p>
             </div>
         </div>
-        
-        <!-- เส้นตกแต่งขอบล่างของ Header -->
         <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500"></div>
     </div>
 
@@ -166,8 +181,6 @@
         
         <!-- Controls -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <!-- Searchable Drug Input -->
             <div class="group">
                 <label for="drugInput" class="block text-sm font-semibold text-slate-700 mb-2 transition-colors group-focus-within:text-indigo-600">
                     <div class="bg-indigo-100 text-indigo-600 w-8 h-8 inline-flex items-center justify-center rounded-lg mr-2 shadow-sm transition-transform group-focus-within:rotate-12">
@@ -178,16 +191,13 @@
                 <div class="relative">
                     <input type="text" id="drugInput" list="drugList" placeholder="พิมพ์ชื่อยา หรือคลิกเพื่อเลือก..." 
                            class="w-full bg-slate-50 border-2 border-slate-200 text-slate-800 text-base rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 block p-4 pr-12 shadow-inner transition-all outline-none font-medium placeholder:text-slate-400 placeholder:font-normal hover:bg-white focus:bg-white">
-                    <datalist id="drugList">
-                        <!-- Options will be populated by JS -->
-                    </datalist>
+                    <datalist id="drugList"></datalist>
                     <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none transition-transform group-focus-within:scale-110">
                         <i class="fa-solid fa-magnifying-glass text-indigo-400"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- Patient Right Select -->
             <div class="group">
                 <label for="rightSelect" class="block text-sm font-semibold text-slate-700 mb-2 transition-colors group-focus-within:text-blue-600">
                     <div class="bg-blue-100 text-blue-600 w-8 h-8 inline-flex items-center justify-center rounded-lg mr-2 shadow-sm transition-transform group-focus-within:-rotate-12">
@@ -204,14 +214,12 @@
                     </select>
                 </div>
             </div>
-
         </div>
 
         <!-- Result Display Area -->
         <div id="emptyState" class="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/80 mt-4 transition-all">
             <div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 border border-slate-100 relative">
                 <i class="fa-solid fa-magnifying-glass text-3xl text-slate-300"></i>
-                <!-- แสงวิบวับรอบแว่นขยายตอนรอ -->
                 <div class="absolute top-0 left-0 w-full h-full border-2 border-indigo-200 rounded-full animate-ping opacity-20"></div>
             </div>
             <h3 class="text-xl font-semibold text-slate-600">รอการประมวลผล</h3>
@@ -225,17 +233,15 @@
 
     </div>
     
-    <!-- Footer : Modern Pill Design & Responsive no-wrap -->
+    <!-- Footer -->
     <div class="bg-gradient-to-b from-slate-50/50 to-slate-100/80 p-6 md:p-8 border-t border-slate-200 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
         <div class="flex flex-col items-center justify-center text-center">
             <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-white border border-slate-200 rounded-full text-slate-700 text-sm font-semibold shadow-sm mb-3">
                 <i class="fa-solid fa-headset text-indigo-500"></i> ติดต่อสอบถามข้อมูลเพิ่มเติม
             </div>
-            
             <p class="text-slate-700 font-medium mb-4 text-[15px] md:text-base px-2">
                 งานผลิตยา (ตึกรังสีรักษา) กลุ่มงานเภสัชกรรม โรงพยาบาลสกลนคร
             </p>
-            
             <div class="flex flex-wrap items-center justify-center gap-3">
                 <a href="tel:042176000" class="no-wrap flex items-center gap-2 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all group">
                     <div class="bg-emerald-100 p-1.5 rounded-lg group-hover:bg-emerald-500 transition-colors">
@@ -243,7 +249,6 @@
                     </div>
                     <span class="text-slate-700 font-medium">042-176000 ต่อ 3932</span>
                 </a>
-                
                 <a href="mailto:happytpn55@gmail.com" class="no-wrap flex items-center gap-2 bg-white px-5 py-2.5 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all group">
                     <div class="bg-blue-100 p-1.5 rounded-lg group-hover:bg-blue-500 transition-colors">
                         <i class="fa-solid fa-envelope text-blue-600 group-hover:text-white transition-colors"></i>
@@ -253,11 +258,13 @@
             </div>
         </div>
     </div>
-
 </div>
 
+<!-- Toast Notification -->
+<div id="toast"><i class="fa-solid fa-circle-check text-emerald-400 mr-2"></i> <span id="toastMsg">คัดลอกสำเร็จ!</span></div>
+
 <script>
-    // --- DATABASE ---[cite: 2]
+    // --- DATABASE ---
     const drugDatabase = {
         "Atezolizumab": {
             "สปสช": { trade: "-", condition: "Not Approved", detail: "ไม่อนุมัติสิทธิ์", pap: null },
@@ -411,6 +418,9 @@
     const emptyState = document.getElementById('emptyState');
     const resultCard = document.getElementById('resultCard');
 
+    // ตัวแปรเก็บข้อมูลสำหรับแชร์
+    let currentShareData = null;
+
     Object.keys(drugDatabase).sort((a, b) => a.localeCompare(b)).forEach(drug => {
         const option = document.createElement('option');
         option.value = drug;
@@ -427,15 +437,30 @@
         if (!selectedDrug || !drugDatabase[selectedDrug] || !selectedRight) {
             resultCard.classList.add('hidden');
             emptyState.classList.remove('hidden');
+            currentShareData = null;
             return;
         }
 
         const data = drugDatabase[selectedDrug][selectedRight];
         
+        let displayDetail = data.detail;
+        if (data.condition === "Not Approved" && displayDetail.includes("ไม่อนุมัติสิทธิ์")) {
+            displayDetail = "ไม่อยู่ในเงื่อนไขการเบิกจ่ายตามสิทธิการรักษา หากประสงค์ใช้ยา ผู้ป่วยต้องชำระค่าใช้จ่ายเอง";
+        }
+
+        // เก็บ Data ไว้ใช้งานกับปุ่ม Share
+        currentShareData = {
+            drug: selectedDrug,
+            trade: data.trade,
+            right: selectedRight,
+            condition: data.condition,
+            detail: displayDetail,
+            pap: data.pap || ""
+        };
+        
         emptyState.classList.add('hidden');
         resultCard.classList.remove('hidden');
         
-        // Retrigger Bounce Animation
         resultCard.classList.remove('animate-slide-up');
         void resultCard.offsetWidth;
         resultCard.classList.add('animate-slide-up');
@@ -458,14 +483,9 @@
             : `<span class="text-slate-900 font-bold text-2xl tracking-wide">${data.trade}</span>`;
 
         const actionPrefix = data.condition === "Not Approved" ? "ผลลัพธ์:" : "ข้อควรปฏิบัติ:";
-        let displayDetail = data.detail;
-        if (data.condition === "Not Approved" && displayDetail.includes("ไม่อนุมัติสิทธิ์")) {
-            displayDetail = "ไม่อยู่ในเงื่อนไขการเบิกจ่ายตามสิทธิการรักษา หากประสงค์ใช้ยา ผู้ป่วยต้องชำระค่าใช้จ่ายเอง";
-        }
 
         let papHtml = "";
         if (data.pap) {
-            // เพิ่ม Animation สั่นๆ เบาๆ (animate-pulse) ที่กล่องของขวัญ PAP
             papHtml = `
             <div class="mt-5 bg-gradient-to-r from-amber-50 to-yellow-50/30 border border-amber-200/60 p-5 rounded-2xl flex items-start gap-4 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
                 <div class="absolute -right-4 -top-4 text-amber-500/10 text-6xl group-hover:rotate-12 transition-transform duration-500"><i class="fa-solid fa-gift"></i></div>
@@ -481,48 +501,113 @@
 
         resultCard.innerHTML = `
             <div class="bg-white border-2 ${theme.border} rounded-3xl overflow-hidden mt-4 shadow-lg shadow-slate-200/50 transition-all duration-300">
-                <div class="${theme.bg} px-6 py-5 border-b ${theme.border} flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-white p-2 rounded-xl shadow-sm shimmer-box">
-                            <i class="fa-solid ${theme.icon} ${theme.iconColor} text-xl w-6 text-center"></i>
+                <!-- ส่วนที่ต้องการแคปเป็นรูป (Slip Content) -->
+                <div id="slip-content" class="bg-white">
+                    <div class="${theme.bg} px-6 py-5 border-b ${theme.border} flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-white p-2 rounded-xl shadow-sm shimmer-box">
+                                <i class="fa-solid ${theme.icon} ${theme.iconColor} text-xl w-6 text-center"></i>
+                            </div>
+                            <span class="font-bold text-lg ${theme.textAlert}">${data.condition === 'Not Approved' ? 'ไม่อนุมัติสิทธิ์' : 'อนุมัติให้ใช้ได้'}</span>
                         </div>
-                        <span class="font-bold text-lg ${theme.textAlert}">${data.condition === 'Not Approved' ? 'ไม่อนุมัติสิทธิ์' : 'อนุมัติให้ใช้ได้'}</span>
-                    </div>
-                    <span class="px-4 py-1.5 text-xs font-bold rounded-full ${theme.badgeBg} ${theme.badgeText} shadow-sm border border-black/5 tracking-wide">
-                        ${data.condition}
-                    </span>
-                </div>
-                
-                <div class="p-6 md:p-8">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors cursor-default">
-                            <span class="block text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">ชื่อสามัญ (Generic)</span>
-                            <span class="text-slate-800 font-semibold text-lg">${selectedDrug}</span>
-                        </div>
-                        <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors cursor-default">
-                            <span class="block text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">สิทธิการรักษา</span>
-                            <span class="text-slate-800 font-semibold text-lg">${selectedRight}</span>
-                        </div>
+                        <span class="px-4 py-1.5 text-xs font-bold rounded-full ${theme.badgeBg} ${theme.badgeText} shadow-sm border border-black/5 tracking-wide">
+                            ${data.condition}
+                        </span>
                     </div>
                     
-                    <div class="mb-6 flex flex-col items-center sm:items-start text-center sm:text-left">
-                        <span class="block text-sm text-slate-500 font-semibold mb-2">ชื่อการค้าที่ระบบอนุมัติ (Trade Name)</span>
-                        <div class="bg-indigo-50/50 py-3 px-6 rounded-2xl inline-block border border-indigo-100 shadow-sm shimmer-box">
-                            ${tradeNameHTML}
+                    <div class="p-6 md:p-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                                <span class="block text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">ชื่อสามัญ (Generic)</span>
+                                <span class="text-slate-800 font-semibold text-lg">${selectedDrug}</span>
+                            </div>
+                            <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                                <span class="block text-[11px] text-slate-500 font-bold mb-1 uppercase tracking-widest">สิทธิการรักษา</span>
+                                <span class="text-slate-800 font-semibold text-lg">${selectedRight}</span>
+                            </div>
                         </div>
-                    </div>
+                        
+                        <div class="mb-6 flex flex-col items-center sm:items-start text-center sm:text-left">
+                            <span class="block text-sm text-slate-500 font-semibold mb-2">ชื่อการค้าที่ระบบอนุมัติ (Trade Name)</span>
+                            <div class="bg-indigo-50/50 py-3 px-6 rounded-2xl inline-block border border-indigo-100 shadow-sm shimmer-box">
+                                ${tradeNameHTML}
+                            </div>
+                        </div>
 
-                    <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-2xl rounded-l-sm shadow-sm relative">
-                        <span class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">${actionPrefix}</span>
-                        <p class="text-slate-700 font-medium text-[15px] leading-relaxed">
-                            ${displayDetail}
-                        </p>
-                    </div>
+                        <div class="bg-slate-50 border-l-4 border-slate-400 p-5 rounded-r-2xl rounded-l-sm shadow-sm relative">
+                            <span class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">${actionPrefix}</span>
+                            <p class="text-slate-700 font-medium text-[15px] leading-relaxed">
+                                ${displayDetail}
+                            </p>
+                        </div>
 
-                    ${papHtml}
+                        ${papHtml}
+                    </div>
+                </div>
+                
+                <!-- Action Buttons (แยกส่วนนี้ไว้ ไม่ให้ติดไปตอนแคปรูป) -->
+                <div class="bg-slate-50 border-t border-slate-100 p-4 md:px-8 flex flex-wrap gap-3 justify-center md:justify-end" data-html2canvas-ignore="true">
+                    <button onclick="shareToLine()" class="flex-1 md:flex-none flex justify-center items-center gap-2 bg-[#00B900] hover:bg-[#009900] text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+                        <i class="fa-brands fa-line text-lg"></i> ส่ง LINE
+                    </button>
+                    <button onclick="downloadSlip()" class="flex-1 md:flex-none flex justify-center items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+                        <i class="fa-solid fa-download"></i> บันทึกรูป (Slip)
+                    </button>
+                    <button onclick="copyData()" class="flex-1 md:flex-none flex justify-center items-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-5 py-2.5 rounded-xl font-semibold shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
+                        <i class="fa-solid fa-copy text-slate-400"></i> คัดลอก
+                    </button>
                 </div>
             </div>
         `;
+    }
+
+    // ฟังก์ชันช่วยแปลงข้อมูลเป็น Text ธรรมดา (ลบ HTML Tag ออก)
+    function generateShareText() {
+        if (!currentShareData) return "";
+        const d = currentShareData;
+        const cleanDetail = d.detail.replace(/<br\s*[\/]?>/gi, "\n").replace(/<[^>]+>/g, '');
+        const cleanPap = d.pap ? d.pap.replace(/<br\s*[\/]?>/gi, "\n").replace(/<[^>]+>/g, '') : "";
+
+        let text = `🏥 ตรวจสอบสิทธิการใช้ยา\n`;
+        text += `──────────────\n`;
+        text += `💊 ชื่อสามัญ: ${d.drug}\n`;
+        text += `🏷️ ชื่อการค้า: ${d.trade}\n`;
+        text += `💳 สิทธิ: ${d.right} (${d.condition})\n`;
+        text += `──────────────\n`;
+        text += `⚠️ เงื่อนไข:\n${cleanDetail}\n`;
+        if (cleanPap) {
+            text += `\n🎁 ${cleanPap}\n`;
+        }
+        return text;
+    }
+
+    // เปิดหน้าแชร์ LINE
+    function shareToLine() {
+        const text = generateShareText();
+        const url = `https://line.me/R/msg/text/?${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    // คัดลอกลง Clipboard พร้อม Toast แจ้งเตือน
+    function copyData() {
+        const text = generateShareText();
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        });
+    }
+
+    // บันทึกหน้าจอส่วน Slip เป็นรูปภาพ
+    function downloadSlip() {
+        const element = document.getElementById('slip-content');
+        // เพิ่มสเกลเพื่อให้รูปชัดเจนขึ้นเวลาเปิดดูใน iPad/มือถือ
+        html2canvas(element, { scale: 2, backgroundColor: '#ffffff', useCORS: true }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `สิทธิยา_${currentShareData.drug}_${currentShareData.right}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
     }
 </script>
 
